@@ -30,6 +30,7 @@
       border-top: none;
       max-height: 320px;
       overflow-y: auto;
+      background: #fff;
     }
 
     #resultados li {
@@ -64,8 +65,6 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycby8YcBUSQFA_Z_mqFWDexjKMnHWzTQy_t0NrsvdgnAyDZz9xpt6gKjSR9Bez2EIdu9Cpw/exec";
-    const JOTFORM_URL = "https://form.jotform.com/260835883917067";
-    const UNIQUE_NAME = "razon";
 
     const input = document.getElementById("buscador");
     const lista = document.getElementById("resultados");
@@ -111,8 +110,16 @@
     }
 
     function seleccionar(valor) {
-      const destino = `${JOTFORM_URL}?${UNIQUE_NAME}=${encodeURIComponent(valor)}`;
-      window.location.href = destino;
+      input.value = valor;
+      lista.innerHTML = "";
+
+      window.parent.postMessage(
+        {
+          type: "seleccionIPS",
+          value: valor
+        },
+        "*"
+      );
     }
 
     function escapeHtml(text) {
