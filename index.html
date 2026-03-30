@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buscador IPS</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    .contenedor {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    #buscador {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    #resultados {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    #resultados li {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-top: 1px solid #eee;
+      background: #fff;
+    }
+
+    #resultados li:hover {
+      background: #f2f2f2;
+    }
+
+    .mensaje {
+      color: #666;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <input
+      type="text"
+      id="buscador"
+      placeholder="Buscar IPS por código o nombre"
+      autocomplete="off"
+    />
+    <ul id="resultados"></ul>
+    <div class="mensaje">Escribe al menos 2 caracteres.</div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycby8YcBUSQFA_Z_mqFWDexjKMnHWzTQy_t0NrsvdgnAyDZz9xpt6gKjSR9Bez2EIdu9Cpw/exec";
+    const JOTFORM_URL = "https://form.jotform.com/260835883917067";
+    const UNIQUE_NAME = "razon";
+
+    const input = document.getElementById("buscador");
+    const lista = document.getElementById("resultados");
+
+    let timer = null;
+
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+
+      const q = input.value.trim();
+
+      if (q.length < 2) {
+        lista.innerHTML = "";
+        return;
+      }
+
+      timer = setTimeout(() => buscar(q), 250);
+    });
+
+    async function buscar(q) {
+      try {
+        const res = await fetch(`${API_URL}?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          lista.innerHTML = "<li>No se encontraron resultados</li>";
+          return;
+        }
+
+        lista.innerHTML = data
+          .map(item => `<li data-valor="${escapeHtml(item)}">${escapeHtml(item)}</li>`)
+          .join("");
+
+        document.querySelectorAll("#resultados li").forEach(li => {
+          li.addEventListener("click", () => {
+            const valor = li.getAttribute("data-valor");
+            seleccionar(valor);
+          });
+        });
+      } catch (error) {
+        lista.innerHTML = "<li>Error al consultar resultados</li>";
+      }
+    }
+
+    function seleccionar(valor) {
+      const destino = `${JOTFORM_URL}?${UNIQUE_NAME}=${encodeURIComponent(valor)}`;
+      window.location.href = destino;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
